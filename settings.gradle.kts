@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Litio1"
+rootProject.name = "AYDS25-Litio1"
 include(":app")
 include(":observer")
