@@ -1,0 +1,181 @@
+AI-generated:
+El punto de partida de tu aplicación Android es la clase que extiende de Activity y está declarada como <intent-filter> con acción MAIN y categoría LAUNCHER en el archivo AndroidManifest.xml. En tu caso, es HomeViewActivity (app/src/main/java/ayds/songinfo/home/view/HomeView.kt).  Flujo de ejecución inicial:
+El sistema Android inicia la app y ejecuta el método onCreate() de HomeViewActivity.
+Dentro de onCreate():
+Se inicializan módulos y dependencias (initModule()).
+Se vinculan los componentes de UI (initProperties()).
+Se configuran listeners de botones (initListeners()).
+Se suscriben observadores para recibir actualizaciones del modelo (initObservers()).
+Se actualiza la imagen de la canción (updateSongImage()).
+Después, la app queda esperando interacción del usuario (por ejemplo, búsqueda de una canción), y los eventos de UI se manejan a través del patrón Observer y el controlador (HomeController).
+
+1- Estructura general del proyecto.
+
+home/: Módulo relacionado con la funcionalidad principal de la aplicación.
+    model/: Contiene la lógica de negocio y acceso a datos.
+    repository/local/spotify/room/: Implementación de acceso a datos usando Room (librería para la persistencia de datos) (por ejemplo, SongDao_Impl.java).
+    view/: Contiene las clases relacionadas con la interfaz de usuario (por ejemplo, HomeViewActivity, HomeUiEvent).
+moredetails/: Módulo para manejar detalles adicionales (por ejemplo, OtherInfoWindow).
+utils/: Contiene utilidades y funciones auxiliares (por ejemplo, constantes, navegación a URL).
+res/: Recursos de la aplicación (layouts, imágenes, cadenas, etc.).
+
+Dependencias principales:
+Room: Librería para la persistencia de datos en Android.
+Retrofit: Librería para realizar peticiones HTTP.
+Picasso: Librería para cargar imágenes desde URLs.
+
+
+2- ¿Cómo es el flujo de la información? ¿Qué información se obtiene de los servicios? ¿Cuáles datos provistos por esos servicios se usan en el proyecto y cuáles se ignoran?
+
+Cuando la aplicación inicia, se carga la Activity principal que es HomeView, que contiene una foto por defecto definida en HomeUIState, un input de texto y 3 botones: Search, More Details y Open Song.
+El botón de Search tiene un listener que realiza dos acciones cuando el botón es clickeado (o presionado en el celu):
+- ocultar el teclado pasándole el input de texto para que se oculte específicamente el teclado abierto asociado a ese input.
+- llamar a searchAction() que a su vez tiene una serie de pasos:
+
+        1. actualiza el estado del término de búsqueda (searchTerm)
+        2. actualiza el estado de actionsEnabled en false
+        3. actualiza el estado de "MoreDetails" según el valor de actionsEnabled, que como se seteó en false, provoca que se deshabiliten los botones de MoreDetails y OpenSong.
+        4. notifica a todos los observadores del sujeto onActionSubject (que es expuesto como un uiEventObservable) pasándoles el evento de Search, lo que provoca que el resto de componentes (ej: el Controller) actúe ante dicho evento de búsqueda.
+        5. el controller se había suscrito al uiEventObservable del HomeView con un observador (callback) que recibe un valor (un evento) y ejecuta una función u otra según el valor. En este caso, ejecuta searchSong().
+        6. searchSong() llama, en un nuevo hilo, a la función searchSong(term) del HomeModel que tiene referenciado el HomeController, pasándole el término de búsqueda que está almacenado en el estado de la HomeView (que fue actualizado previo a la notificación a los observers).
+        7. searchSong(term) busca la canción en el Repositorio (una abstracción/mediador para el almacenamiento de datos) y luego notifica a todos los observadores de songObservable pasándole dicha canción.
+        8. HomeView se había suscrito al sujeto songObservable de HomeModel, con el callback que recibe un valor (la canción) y llama a updateSongInfo(canción).
+        9. updateSongInfo(canción) actualiza el estado de la UI dependiendo de si la canción fue encontrada o no, actualiza en un hilo de UI el textview de la descripción, la imagen, y habilita el botón de MoreDetails y OpenSong.
+
+3- ¿Cuál es la fuente de los datos? ¿Qué información se obtiene de los servicios? ¿cuáles se usan en el proyecto y cuáles se ignoran?
+
+La canción es buscada por id o por término. En caso de ser buscada por término, se utiliza la función getSongByTerm(term) de SongRepository. Ésta busca primero en el localStorage y si no está, la busca a través del spotifyTrackService.
+
+Cuando se busca una canción usando la API de Spotify (https://developer.spotify.com/documentation/web-api/reference/search), se recibe el siguiente objeto Response (buscando la palabra "holaaa") cuyo body es:
+
+  "tracks": {
+    "href": "https://api.spotify.com/v1/search?offset=0&limit=1&query=holaaa&type=track&locale=es-AR,en-US;q%3D0.7,en;q%3D0.3",
+    "limit": 1,
+    "next": "https://api.spotify.com/v1/search?offset=1&limit=1&query=holaaa&type=track&locale=es-AR,en-US;q%3D0.7,en;q%3D0.3",
+    "offset": 0,
+    "previous": null,
+    "total": 828,
+    "items": [
+      {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/3WMlRpW5JWuDI95TcEWt3r"
+              },
+              "href": "https://api.spotify.com/v1/artists/3WMlRpW5JWuDI95TcEWt3r",
+              "id": "3WMlRpW5JWuDI95TcEWt3r",
+              "name": "Salastkbron",
+              "type": "artist",
+              "uri": "spotify:artist:3WMlRpW5JWuDI95TcEWt3r"
+            }
+          ],
+          "available_markets": [
+            "AR", "AU", "AT", "BE", "BO", "BR", "BG", "CA", "CL", "CO", "CR", "CY", "CZ", "DK", "DO", "DE", "EC", "EE", "SV", "FI", "FR", "GR", "GT", "HN", "HK", "HU", "IS", "IE", "IT", "LV", "LT", "LU", "MY", "MT", "MX", "NL", "NZ", "NI", "NO", "PA", "PY", "PE", "PH", "PL", "PT", "SG", "SK", "ES", "SE", "CH", "TW", "TR", "UY", "US", "GB", "AD", "LI", "MC", "ID", "JP", "TH", "VN", "RO", "IL", "ZA", "SA", "AE", "BH", "QA", "OM", "KW", "EG", "MA", "DZ", "TN", "LB", "JO", "PS", "IN", "KZ", "MD", "UA", "AL", "BA", "HR", "ME", "MK", "RS", "SI", "KR", "BD", "PK", "LK", "GH", "KE", "NG", "TZ", "UG", "AG", "AM", "BS", "BB", "BZ", "BT", "BW", "BF", "CV", "CW", "DM", "FJ", "GM", "GE", "GD", "GW", "GY", "HT", "JM", "KI", "LS", "LR", "MW", "MV", "ML", "MH", "FM", "NA", "NR", "NE", "PW", "PG", "PR", "WS", "SM", "ST", "SN", "SC", "SL", "SB", "KN", "LC", "VC", "SR", "TL", "TO", "TT", "TV", "VU", "AZ", "BN", "BI", "KH", "CM", "TD", "KM", "GQ", "SZ", "GA", "GN", "KG", "LA", "MO", "MR", "MN", "NP", "RW", "TG", "UZ", "ZW", "BJ", "MG", "MU", "MZ", "AO", "CI", "DJ", "ZM", "CD", "CG", "IQ", "LY", "TJ", "VE", "ET", "XK"
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/3SRotvhGXwHGXC4MGvybc3"
+          },
+          "href": "https://api.spotify.com/v1/albums/3SRotvhGXwHGXC4MGvybc3",
+          "id": "3SRotvhGXwHGXC4MGvybc3",
+          "images": [
+            {
+              "height": 640,
+              "width": 640,
+              "url": "https://i.scdn.co/image/ab67616d0000b273c42fa6a43b20cb8bc955efab"
+            },
+            {
+              "height": 300,
+              "width": 300,
+              "url": "https://i.scdn.co/image/ab67616d00001e02c42fa6a43b20cb8bc955efab"
+            },
+            {
+              "height": 64,
+              "width": 64,
+              "url": "https://i.scdn.co/image/ab67616d00004851c42fa6a43b20cb8bc955efab"
+            }
+          ],
+          "is_playable": true,
+          "name": "HOLA",
+          "release_date": "2024-11-14",
+          "release_date_precision": "day",
+          "total_tracks": 1,
+          "type": "album",
+          "uri": "spotify:album:3SRotvhGXwHGXC4MGvybc3"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/3WMlRpW5JWuDI95TcEWt3r"
+            },
+            "href": "https://api.spotify.com/v1/artists/3WMlRpW5JWuDI95TcEWt3r",
+            "id": "3WMlRpW5JWuDI95TcEWt3r",
+            "name": "Salastkbron",
+            "type": "artist",
+            "uri": "spotify:artist:3WMlRpW5JWuDI95TcEWt3r"
+          }
+        ],
+        "available_markets": [
+          "AR", "AU", "AT", "BE", "BO", "BR", "BG", "CA", "CL", "CO", "CR", "CY", "CZ", "DK", "DO", "DE", "EC", "EE", "SV", "FI", "FR", "GR", "GT", "HN", "HK", "HU", "IS", "IE", "IT", "LV", "LT", "LU", "MY", "MT", "MX", "NL", "NZ", "NI", "NO", "PA", "PY", "PE", "PH", "PL", "PT", "SG", "SK", "ES", "SE", "CH", "TW", "TR", "UY", "US", "GB", "AD", "LI", "MC", "ID", "JP", "TH", "VN", "RO", "IL", "ZA", "SA", "AE", "BH", "QA", "OM", "KW", "EG", "MA", "DZ", "TN", "LB", "JO", "PS", "IN", "KZ", "MD", "UA", "AL", "BA", "HR", "ME", "MK", "RS", "SI", "KR", "BD", "PK", "LK", "GH", "KE", "NG", "TZ", "UG", "AG", "AM", "BS", "BB", "BZ", "BT", "BW", "BF", "CV", "CW", "DM", "FJ", "GM", "GE", "GD", "GW", "GY", "HT", "JM", "KI", "LS", "LR", "MW", "MV", "ML", "MH", "FM", "NA", "NR", "NE", "PW", "PG", "PR", "WS", "SM", "ST", "SN", "SC", "SL", "SB", "KN", "LC", "VC", "SR", "TL", "TO", "TT", "TV", "VU", "AZ", "BN", "BI", "KH", "CM", "TD", "KM", "GQ", "SZ", "GA", "GN", "KG", "LA", "MO", "MR", "MN", "NP", "RW", "TG", "UZ", "ZW", "BJ", "MG", "MU", "MZ", "AO", "CI", "DJ", "ZM", "CD", "CG", "IQ", "LY", "TJ", "VE", "ET", "XK"
+        ],
+        "disc_number": 1,
+        "duration_ms": 159600,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "CLAA22400394"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/6KL4xXon9FzxM3cCm9GyK3"
+        },
+        "href": "https://api.spotify.com/v1/tracks/6KL4xXon9FzxM3cCm9GyK3",
+        "id": "6KL4xXon9FzxM3cCm9GyK3",
+        "is_local": false,
+        "is_playable": true,
+        "name": "HOLA",
+        "popularity": 59,
+        "preview_url": null,
+        "track_number": 1,
+        "type": "track",
+        "uri": "spotify:track:6KL4xXon9FzxM3cCm9GyK3"
+      }
+    ]
+  }
+
+
+A través de la clase spotifyToSongResolver se puede observar los distintos valores que se toman de la respuesta de la API, concretamente en la función getSongFromExternalData(). Estos son:
+
+- el ID de la canción.
+- el nombre de la canción.
+- el nombre del artista que compuso la canción (está en el sub-array "artists")
+- el nombre del album en el que aparece la canción (está en el sub-array "album").
+- la fecha de lanzamiento del album de la canción.
+- la url a la canción.
+- la imagen del album de la canción.
+
+El resto de las propiedades del objeto se ignoran.
+
+4. ¿Dónde y por qué se setea [*]?
+
+Este marcador se coloca en aquellas canciones y/o pantallas de MoreDetails que están almacenadas localmente.
+Con respecto a las canciones, se puede ver en la clase SongDescriptionHelper, usada por HomeView para actualizar el UIState de la descripción, que si la canción tiene isLocallyStored en true, se agregará un [*] a la descripción.
+Con respecto a la activity de MoreDetails, se puede ver en OtherInfoWindow.java que se agrega la marca [*] al resto de la biografía del artículo cuando es encontrado en la base de datos local.
+
+5.  Imágenes por defecto: condiciones, fuente de la imagen.
+En la clase HomeUIState podemos ver que hay un companion object (un miembro de la clase) que posee una constante DEFAULT_IMAGE procedente de Wikimedia. Esta imagen es cargada en la creación de HomeView mediante updateSongImage(), que en un hilo de UI carga, con ayuda de la librería Picasso, la imagen almacenada en la URL de songImageUrl del HomeUIState a la posterImageView que es donde se muestra la imágen de las canciones buscadas.
+
+6.  Analizar los edge cases: song no encontrada, sin conexión a internet.
+
+Haciendo una búsqueda por "<>>>>" arroja "Song not found" con la imagen por defecto y los dos botones deshabilitados.
+Haciendo una búsqueda con el internet desactivado arroja lo mismo. Sin embargo, las canciones que ya se habían buscado antes y que por ende están guardadas en el localStorage son encontradas. Pero al hacer click en "More details", no carga ninguna información en la pantalla (y al volver a hacer click, tampoco aparece un [*], lo cual sería buena señal).
+Haciendo una búsqueda y presionando en More Details, se carga la biografía del artista, y si luego se pierde la conexión, igual es posible volver a leer la biografía, la cual se le agregó un [*] porque está localmente almacenada.
+
+7. Qué librerías externas se utilizan.
+Retrofit: For HTTP networking (libs.retrofit, libs.retrofit.converter)
+Gson: For JSON parsing (libs.gson)
+Picasso: For image loading (libs.picasso)
+Room: For local database persistence (libs.androidx.room, libs.androidx.room.compiler)
+AndroidX: Core, AppCompat, Material components (libs.androidx.core.ktx, libs.androidx.appcompat, libs.material)
+JUnit: For unit testing (libs.junit)
+Espresso: For UI testing (libs.androidx.espresso.core)
+These are declared in your build.gradle.kts files.

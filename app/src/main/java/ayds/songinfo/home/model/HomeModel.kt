@@ -5,7 +5,8 @@ import ayds.songinfo.home.model.repository.SongRepository
 import ayds.observer.Observable
 import ayds.observer.Subject
 
-interface  HomeModel {
+
+interface HomeModel {
 
     val songObservable: Observable<Song>
 
@@ -19,6 +20,9 @@ internal class HomeModelImpl(private val repository: SongRepository) : HomeModel
     override val songObservable = Subject<Song>()
 
     override fun searchSong(term: String) {
+        // busca una canción por término y notifica a los observadores con la canción obtenida
+        // es lo mismo que songObservable.notify(repository.getSongByTerm(term))
+        // con el let {} se ejecuta el bloque con repository.getSongByTerm(term) como "it"
         repository.getSongByTerm(term).let {
             songObservable.notify(it)
         }

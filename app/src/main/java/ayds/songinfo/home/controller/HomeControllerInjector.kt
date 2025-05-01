@@ -6,7 +6,7 @@ import ayds.songinfo.home.view.HomeView
 object HomeControllerInjector {
 
     fun onViewStarted(homeView: HomeView) {
-        ayds.songinfo.home.controller.HomeControllerImpl(HomeModelInjector.getHomeModel()).apply {
+        HomeControllerImpl(HomeModelInjector.getHomeModel()).apply {
             setHomeView(homeView)
         }
     }

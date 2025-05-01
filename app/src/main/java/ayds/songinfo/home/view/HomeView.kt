@@ -32,12 +32,15 @@ interface HomeView {
 
 class HomeViewActivity : Activity(), HomeView {
 
-    private val onActionSubject = Subject<HomeUiEvent>()
+    // Home model layer (capa de modelo), provee la data de la song y expone un observable para actualizar la UI
     private lateinit var homeModel: HomeModel
+
+    // Helpers y utilities
     private val songDescriptionHelper: SongDescriptionHelper = HomeViewInjector.songDescriptionHelper
     private val imageLoader: ImageLoader = UtilsInjector.imageLoader
     private val navigationUtils: NavigationUtils = UtilsInjector.navigationUtils
 
+    // UI Components
     private lateinit var searchButton: Button
     private lateinit var modeDetailsButton: Button
     private lateinit var openSongButton: Button
@@ -45,6 +48,8 @@ class HomeViewActivity : Activity(), HomeView {
     private lateinit var descriptionTextView: TextView
     private lateinit var posterImageView: ImageView
 
+    // State and Observables
+    private val onActionSubject = Subject<HomeUiEvent>()
     override val uiEventObservable: Observable<HomeUiEvent> = onActionSubject
     override var uiState: HomeUiState = HomeUiState()
 
@@ -113,6 +118,14 @@ class HomeViewActivity : Activity(), HomeView {
 
     private fun hideKeyboard(view: View) {
         (this@HomeViewActivity.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).apply {
+            /*
+            * En Android, view.windowToken obtiene un identificador único del "window" al que la vista
+            * (termEditText en este caso) está adjunta. Este token le indica al sistema exactamente a qué ventana
+            * pertenece la vista.  Cuando ocultas el teclado con hideSoftInputFromWindow(view.windowToken, 0),
+            * el sistema sabe qué teclado debe ocultar, porque puede haber varios teclados abiertos para diferentes ventanas
+            * o actividades. Usar la vista específica (termEditText) asegura que el teclado asociado a ese
+            * campo de texto se cierre correctamente, incluso si hay otros inputs en pantalla.
+            */
             hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
@@ -126,6 +139,8 @@ class HomeViewActivity : Activity(), HomeView {
     }
 
     private fun initObservers() {
+        // homeView se suscribe al observable de homeModel
+        // cada vez que homeModel emite un nuevo valor, se ejecuta este callback
         homeModel.songObservable
             .subscribe { value -> updateSongInfo(value) }
     }

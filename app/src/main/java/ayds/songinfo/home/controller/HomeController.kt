@@ -13,16 +13,20 @@ interface HomeController {
 
 internal class HomeControllerImpl(
     private val homeModel: HomeModel
-) : ayds.songinfo.home.controller.HomeController {
+) : HomeController {
 
     private lateinit var homeView: HomeView
 
     override fun setHomeView(homeView: HomeView) {
         this.homeView = homeView
+        // el controller se suscribe a los eventos de la vista con el observer parametrizado
         homeView.uiEventObservable.subscribe(observer)
     }
 
     private val observer: Observer<HomeUiEvent> =
+        // el observer recibe el evento y ejecuta la acción correspondiente
+        // la sintaxis es así porque Observer es una "functional interface" o SAM (single abstract method)
+        // básicamente es un interface que tiene un solo métod0 abstracto y por ende se implementa con un lambda
         Observer { value ->
             when (value) {
                 HomeUiEvent.Search -> searchSong()
