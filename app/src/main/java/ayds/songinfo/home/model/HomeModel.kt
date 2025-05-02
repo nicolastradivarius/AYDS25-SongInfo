@@ -5,7 +5,6 @@ import ayds.songinfo.home.model.repository.SongRepository
 import ayds.observer.Observable
 import ayds.observer.Subject
 
-
 interface HomeModel {
 
     val songObservable: Observable<Song>
