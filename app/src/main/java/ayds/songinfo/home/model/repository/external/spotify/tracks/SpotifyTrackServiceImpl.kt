@@ -13,7 +13,6 @@ internal class SpotifyTrackServiceImpl(
 
     override fun getSong(title: String): SpotifySong? {
         val callResponse = getSongFromService(title)
-        println(callResponse.body())
         return spotifyToSongResolver.getSongFromExternalData(callResponse.body())
     }
 
