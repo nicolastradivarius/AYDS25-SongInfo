@@ -4,4 +4,6 @@
     <string name="search">Search</string>
     <string name="more_details">More Details</string>
     <string name="open_song">Open Song</string>
+    <string name="view_full_article">View Full Article</string>
+    <string name="lastfm">LastFM</string>
 </resources>

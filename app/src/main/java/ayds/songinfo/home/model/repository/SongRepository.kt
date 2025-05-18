@@ -27,6 +27,8 @@ internal class SongRepositoryImpl(
 
                     spotifySong?.let {
                         when {
+                            // hay veces en que una misma canción se busca por nombres distintos
+                            // isSavedSong se fija si el ID de la canción ya está, en cuyo caso actualiza el término
                             it.isSavedSong() -> spotifyLocalStorage.updateSongTerm(term, it.id)
                             else -> spotifyLocalStorage.insertSong(term, it)
                         }

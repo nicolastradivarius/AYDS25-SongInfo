@@ -31,7 +31,7 @@ internal class HomeControllerImpl(
             when (value) {
                 HomeUiEvent.Search -> searchSong()
                 HomeUiEvent.MoreDetails -> moreDetails()
-                is HomeUiEvent.OpenSongUrl -> openSongUrl()
+                HomeUiEvent.OpenSongUrl -> openSongUrl()
             }
         }
 
