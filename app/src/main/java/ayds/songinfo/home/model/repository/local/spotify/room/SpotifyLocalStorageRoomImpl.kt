@@ -10,8 +10,6 @@ internal class SpotifyLocalStorageRoomImpl(
     private val songDao: SongDao = dataBase.songDao()
 
     override fun updateSongTerm(query: String, songId: String) {
-
-
     }
 
     override fun updateSongTerm(query: String, song: SpotifySong) {
