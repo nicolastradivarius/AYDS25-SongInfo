@@ -17,8 +17,8 @@ internal class SongDescriptionHelperImpl (
         return when (song) {
             is SpotifySong ->
                 "Song: ${song.songName} " +
-                if (song.isLocallyStored) "[*]" else "" +
-                "\nArtist: ${song.artistName}\n" +
+                if (song.isLocallyStored) "[*]" else {""} + "\n" +
+                "Artist: ${song.artistName}\n" +
                 "Album: ${song.albumName}\n" +
                 "Release Date: ${releaseDateFormatter.getFormattedReleaseDate(song)}\n"
 
