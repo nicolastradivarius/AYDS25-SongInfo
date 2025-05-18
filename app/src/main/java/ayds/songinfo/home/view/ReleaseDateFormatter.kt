@@ -2,6 +2,12 @@ package ayds.songinfo.home.view
 
 import ayds.songinfo.home.model.entities.Song
 
+enum class ReleaseDatePrecision {
+    DAY,
+    MONTH,
+    YEAR
+}
+
 interface ReleaseDateFormatter {
     fun getFormattedReleaseDate(song: Song.SpotifySong): String
 }
@@ -9,9 +15,9 @@ interface ReleaseDateFormatter {
 class ReleaseDateFormatterImpl : ReleaseDateFormatter {
     override fun getFormattedReleaseDate(song: Song.SpotifySong): String {
         return when (song.releaseDatePrecision) {
-            "day" -> ReleaseDateDayFormatter.getFormattedReleaseDate(song)
-            "month" -> ReleaseDateMonthFormatter.getFormattedReleaseDate(song)
-            "year" -> ReleaseDateYearFormatter.getFormattedReleaseDate(song)
+            ReleaseDatePrecision.DAY.name -> ReleaseDateDayFormatter.getFormattedReleaseDate(song)
+            ReleaseDatePrecision.MONTH.name -> ReleaseDateMonthFormatter.getFormattedReleaseDate(song)
+            ReleaseDatePrecision.YEAR.name -> ReleaseDateYearFormatter.getFormattedReleaseDate(song)
             else -> ReleaseDateDefaultFormatter.getFormattedReleaseDate(song)
         }
     }
@@ -37,10 +43,11 @@ internal object ReleaseDateMonthFormatter: ReleaseDateFormatter {
     override fun getFormattedReleaseDate(song: Song.SpotifySong): String {
         // releaseDate viene en formato yyyy-MM
         val parts = song.releaseDate.split("-")
-        val month = parts[1].toInt()
+        val month = parts[1].toIntOrNull()
         val year = parts[0]
-        return if (validMonth(month))
-            "${monthNames[month - 1]} $year" else year
+        return month?.let {
+            if (validMonth(it)) "${monthNames[it - 1]} $year" else year
+        } ?: year
     }
 
     private fun validMonth(month: Int): Boolean {
