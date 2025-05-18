@@ -1,10 +1,10 @@
 package ayds.songinfo.home.view
 
 interface ReleaseDateFormatterFactory {
-    fun create(): ReleaseDateFormatter
+    fun createInstance(): ReleaseDateFormatter
 }
 
 // por defecto, la factory creará instancias de ReleaseDateFormatterImpl
 class DefaultReleaseDateFormatterFactory : ReleaseDateFormatterFactory {
-    override fun create(): ReleaseDateFormatter = ReleaseDateFormatterImpl()
+    override fun createInstance(): ReleaseDateFormatter = ReleaseDateFormatterImpl()
 }

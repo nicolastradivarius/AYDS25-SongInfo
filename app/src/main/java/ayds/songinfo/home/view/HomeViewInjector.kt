@@ -17,7 +17,7 @@ object HomeViewInjector {
         DefaultReleaseDateFormatterFactory()
 
     val songDescriptionHelper: SongDescriptionHelper =
-        SongDescriptionHelperImpl(releaseDateFormatterFactory.create())
+        SongDescriptionHelperImpl(releaseDateFormatterFactory.createInstance())
 
     fun init(homeView: HomeView) {
         HomeModelInjector.initHomeModel(homeView)

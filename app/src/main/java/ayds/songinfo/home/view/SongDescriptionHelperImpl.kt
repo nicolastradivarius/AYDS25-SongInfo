@@ -16,13 +16,11 @@ internal class SongDescriptionHelperImpl (
     override fun getSongDescriptionText(song: Song): String {
         return when (song) {
             is SpotifySong ->
-                "${
-                    "Song: ${song.songName} " +
-                            if (song.isLocallyStored) "[*]" else ""
-                }\n" +
-                        "Artist: ${song.artistName}\n" +
-                        "Album: ${song.albumName}\n" +
-                        "Release Date: ${releaseDateFormatter.getFormattedReleaseDate(song)}\n"
+                "Song: ${song.songName} " +
+                if (song.isLocallyStored) "[*]" else "" +
+                "\nArtist: ${song.artistName}\n" +
+                "Album: ${song.albumName}\n" +
+                "Release Date: ${releaseDateFormatter.getFormattedReleaseDate(song)}\n"
 
             else -> "Song not found"
         }

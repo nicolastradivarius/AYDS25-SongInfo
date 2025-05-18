@@ -9,42 +9,57 @@ interface ReleaseDateFormatter {
 class ReleaseDateFormatterImpl : ReleaseDateFormatter {
     override fun getFormattedReleaseDate(song: Song.SpotifySong): String {
         return when (song.releaseDatePrecision) {
-            "day" -> formatDay(song.releaseDate)
-            "month" -> formatMonth(song.releaseDate)
-            "year" -> formatYear(song.releaseDate)
-            else -> song.releaseDate
+            "day" -> ReleaseDateDayFormatter.getFormattedReleaseDate(song)
+            "month" -> ReleaseDateMonthFormatter.getFormattedReleaseDate(song)
+            "year" -> ReleaseDateYearFormatter.getFormattedReleaseDate(song)
+            else -> ReleaseDateDefaultFormatter.getFormattedReleaseDate(song)
         }
     }
+}
 
-    private fun formatDay(releaseDate: String): String {
+internal object ReleaseDateDayFormatter: ReleaseDateFormatter {
+    override fun getFormattedReleaseDate(song: Song.SpotifySong): String {
         // releaseDate viene en formato yyyy-MM-dd
-        val parts = releaseDate.split("-")
+        val parts = song.releaseDate.split("-")
         val day = parts[2]
         val month = parts[1]
         val year = parts[0]
         return "$day/$month/$year"
     }
+}
 
-    private fun formatMonth(releaseDate: String): String {
-        // releaseDate: yyyy-MM
-        val parts = releaseDate.split("-")
-        val month = parts[1]
+internal object ReleaseDateMonthFormatter: ReleaseDateFormatter {
+    private val monthNames = listOf(
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    )
+
+    override fun getFormattedReleaseDate(song: Song.SpotifySong): String {
+        // releaseDate viene en formato yyyy-MM
+        val parts = song.releaseDate.split("-")
+        val month = parts[1].toInt()
         val year = parts[0]
-        return "${monthNames[month.toInt()-1]} $year"
+        return if (validMonth(month))
+            "${monthNames[month - 1]} $year" else year
     }
 
-    private fun formatYear(releaseDate: String): String {
+    private fun validMonth(month: Int): Boolean {
+        return month in 1..12
+    }
+}
+
+internal object ReleaseDateYearFormatter: ReleaseDateFormatter {
+    override fun getFormattedReleaseDate(song: Song.SpotifySong): String {
         // releaseDate: yyyy
-        val year = releaseDate.toIntOrNull() ?: return releaseDate
+        val year = song.releaseDate.toIntOrNull() ?: return song.releaseDate
         return if (isLeapYear(year)) "$year" else "$year (not a leap year)"
     }
 
     private fun isLeapYear(year: Int): Boolean {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
+}
 
-    private val monthNames = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    )
+internal object ReleaseDateDefaultFormatter: ReleaseDateFormatter {
+    override fun getFormattedReleaseDate(song: Song.SpotifySong) = song.releaseDate
 }
