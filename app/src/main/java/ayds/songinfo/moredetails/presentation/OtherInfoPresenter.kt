@@ -19,9 +19,11 @@ internal class OtherInfoPresenterImpl(
     override val artistBiographyObservable = Subject<ArtistBiographyUiState>()
 
     override fun getArtistInfo(artistName: String) {
-        repository.getArtistBiography(artistName).let {
-            artistBiographyObservable.notify(it.toUiState())
-        }
+        Thread {
+            repository.getArtistBiography(artistName).let {
+                artistBiographyObservable.notify(it.toUiState())
+            }
+        }.start()
     }
 
     private fun ArtistBiography.toUiState() = ArtistBiographyUiState(
