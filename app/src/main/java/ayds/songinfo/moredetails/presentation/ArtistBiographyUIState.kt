@@ -1,11 +1,13 @@
 package ayds.songinfo.moredetails.presentation
 
-private const val LASTFM_IMAGE_URL =
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Lastfm_logo.svg/320px-Lastfm_logo.svg.png"
-
+/** Represents the UI state for displaying artist biography information.
+ *
+ * @property artistName The name of the artist.
+ * @property infoHtml The HTML formatted biography information of the artist.
+ * @property lastFMUrl The URL to the artist's page on Last.fm.
+ */
 data class ArtistBiographyUiState(
-    var artistName: String = "",
-    var infoHtml: String = "",
-    var articleUrl: String = "",
-    val imageUrl: String = LASTFM_IMAGE_URL
+    val artistName: String = "",
+    val infoHtml: String = "",
+    val lastFMUrl: String = "",
 )

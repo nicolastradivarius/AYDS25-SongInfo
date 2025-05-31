@@ -11,6 +11,9 @@ import ayds.songinfo.R
 import ayds.songinfo.moredetails.injector.OtherInfoInjector
 import com.squareup.picasso.Picasso
 
+private const val LASTFM_IMAGE_URL =
+	"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Lastfm_logo.svg/320px-Lastfm_logo.svg.png"
+
 class OtherInfoView : Activity() {
 	var uiState: ArtistBiographyUiState = ArtistBiographyUiState()
 
@@ -39,7 +42,7 @@ class OtherInfoView : Activity() {
 
 	private fun initListeners() {
 		openUrlButton.setOnClickListener {
-			navigateToURL(uiState.articleUrl)
+			navigateToURL(uiState.lastFMUrl)
 		}
 	}
 
@@ -50,7 +53,6 @@ class OtherInfoView : Activity() {
 
 	private fun initObservers() {
 		presenter.artistBiographyObservable.subscribe { artistBiography ->
-			println("HOLAAAAAAAAAAA")
 			updateUIState(artistBiography)
 			updateUI()
 		}
@@ -80,7 +82,7 @@ class OtherInfoView : Activity() {
 	}
 
 	private fun updateLastFMImage() =
-		Picasso.get().load(uiState.imageUrl).into(lastFMImageView as ImageView?)
+		Picasso.get().load(LASTFM_IMAGE_URL).into(lastFMImageView as ImageView?)
 
 	private fun updateArticleText() {
 		articleTextView.text = Html.fromHtml(uiState.infoHtml, Html.FROM_HTML_MODE_COMPACT)
@@ -90,7 +92,7 @@ class OtherInfoView : Activity() {
 		uiState = uiState.copy(
 			artistName = artistBiography.artistName,
 			infoHtml = artistBiography.infoHtml,
-			articleUrl = artistBiography.articleUrl
+			lastFMUrl = artistBiography.lastFMUrl
 		)
 	}
 

@@ -18,6 +18,12 @@ internal class OtherInfoPresenterImpl(
 
     override val artistBiographyObservable = Subject<ArtistBiographyUiState>()
 
+    /**
+     * Obtiene la biografía del artista y notifica a los observadores.
+     * Se ejecuta en un hilo separado para evitar bloquear el hilo principal.
+     *
+     * @param artistName Nombre del artista.
+     */
     override fun getArtistInfo(artistName: String) {
         Thread {
             repository.getArtistBiography(artistName).let {
@@ -26,9 +32,14 @@ internal class OtherInfoPresenterImpl(
         }.start()
     }
 
+    /**
+     * Convierte un objeto ArtistBiography a ArtistBiographyUiState.
+     *
+     * @return ArtistBiographyUiState con los datos del artista.
+     */
     private fun ArtistBiography.toUiState() = ArtistBiographyUiState(
         artistName,
-        artistBiographyDescriptionHelper.textToHtml(biography, artistName),
-        lastFMUrl
+        artistBiographyDescriptionHelper.getDescription(this),
+        articleUrl
     )
 }

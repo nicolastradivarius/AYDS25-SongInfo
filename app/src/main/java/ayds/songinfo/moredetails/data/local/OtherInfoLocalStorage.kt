@@ -25,7 +25,7 @@ internal class OtherInfoLocalStorageImpl(
                 ArticleEntity(
                     artistBiography.artistName,
                     artistBiography.biography,
-                    artistBiography.lastFMUrl
+                    artistBiography.articleUrl
                 )
             )
         }.start()
