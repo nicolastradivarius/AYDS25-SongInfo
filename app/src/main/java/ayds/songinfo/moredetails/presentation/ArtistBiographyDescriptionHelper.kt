@@ -14,7 +14,8 @@ internal class ArtistBiographyDescriptionHelper {
      */
     internal fun getDescription(artistBiography: ArtistBiography): String {
         val prefix = if (artistBiography.isLocallyStored) "[*]\n\n\n" else ""
-        return prefix + textToHtml(artistBiography.biography, artistBiography.artistName)
+        val html = textToHtml(artistBiography.biography, artistBiography.artistName)
+        return prefix + html
     }
 
     /**
@@ -30,6 +31,7 @@ internal class ArtistBiographyDescriptionHelper {
         builder.append("<font face=\"arial\">")
         val textWithBold = text
             .replace("'", " ")
+            .replace("\\n", "\n")
             .replace("\n", "<br>")
             .replace(
                 ("(?i)$term").toRegex(),
