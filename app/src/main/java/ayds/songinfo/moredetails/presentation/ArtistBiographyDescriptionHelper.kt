@@ -24,7 +24,7 @@ internal class ArtistBiographyDescriptionHelper {
      * @param term The term to be highlighted in the text.
      * @return A string containing the HTML representation of the text with the term highlighted.
      */
-    internal fun textToHtml(text: String, term: String): String {
+    private fun textToHtml(text: String, term: String): String {
         val builder = StringBuilder()
         builder.append("<html><div width=400>")
         builder.append("<font face=\"arial\">")

@@ -39,6 +39,6 @@ class OtherInfoRepositoryImpl(
     }
 }
 
-private fun ArtistBiography.markAsLocal(): ArtistBiography {
+fun ArtistBiography.markAsLocal(): ArtistBiography {
     return copy(isLocallyStored = true)
 }

@@ -7,6 +7,7 @@ import ayds.songinfo.moredetails.domain.OtherInfoRepository
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -17,16 +18,24 @@ class OtherInfoRepositoryTest {
 	private val otherInfoService: OtherInfoService = mockk()
 	private lateinit var otherInfoRepository: OtherInfoRepository
 	private val artistName = "artistName"
-	private val expectedBiography = ArtistBiography(
+
+	private val expectedLocalArtist = ArtistBiography(
 		artistName = artistName,
 		biography = "biography",
-		lastFMUrl = "lastFMUrl"
+		articleUrl = "lastFMUrl",
+		isLocallyStored = true
+	)
+
+	private val expectedServiceArtist = ArtistBiography(
+		artistName = artistName,
+		biography = "biography",
+		articleUrl = "lastFMUrl",
+		isLocallyStored = false
 	)
 
 	@Before
 	fun onBefore() {
 		// Configuración inicial antes de cada prueba
-		MockKAnnotations.init(this)
 		otherInfoRepository = OtherInfoRepositoryImpl(
 			otherInfoLocalStorage = otherInfoLocalStorage,
 			otherInfoService = otherInfoService
@@ -39,7 +48,7 @@ class OtherInfoRepositoryTest {
 		// cada vez que el repository real llame a otherInfoLocalStorage.getArticle(artistName), debe devolver null
 		every { otherInfoLocalStorage.getArticle(artistName) } returns null
 		// cada vez que el repository real llame a otherInfoService.getArticle(artistName), debe devolver expectedBiography
-		every { otherInfoService.getArticle(artistName) } returns expectedBiography
+		every { otherInfoService.getArticle(artistName) } returns expectedServiceArtist
 		// y cada vez que el repository real llame a otherInfoLocalStorage.insertArticle(expectedBiography), no hace nada (es un mock)
 		// (con relaxed = true en la declaración de otherInfoLocalStorage, no es necesario especificar esto, ya que el mock relajado no lanza excepciones)
 		//every { otherInfoLocalStorage.insertArticle(expectedBiography) } returns Unit
@@ -48,23 +57,40 @@ class OtherInfoRepositoryTest {
 		val result = otherInfoRepository.getArtistBiography(artistName)
 
 		// then: ¿qué tiene que pasar cuando se ejecute lo definido en el when?
-		assertEquals(expectedBiography, result)
+		assertEquals(expectedServiceArtist, result)
+		assertFalse(result.isLocallyStored)
 	}
 
 	@Test
 	fun `getArtistBiography encuentra la biografia en el local storage`() {
 		// given: ¿qué condiciones y datos se necesitan para la prueba?
 		// cada vez que el repository real llame a otherInfoLocalStorage.getArticle(artistName), debe devolver expectedBiography
-		every { otherInfoLocalStorage.getArticle(artistName) } returns expectedBiography
+		every { otherInfoLocalStorage.getArticle(artistName) } returns expectedLocalArtist
 
 		// when: ¿cuándo tiene que ocurrir lo definido en el given?
 		val result = otherInfoRepository.getArtistBiography(artistName)
 
 		// then: ¿qué tiene que pasar cuando se ejecute lo definido en el when?
 		// el resultado debe ser igual a expectedBiography
-		assertEquals(expectedBiography, result)
+		assertEquals(expectedLocalArtist, result)
 		// debe estar marcado como local
-		assertTrue(result.biography.startsWith("[*]\n\n\n"))
-
+		assertTrue(result.isLocallyStored)
 	}
+
+	/*
+	No funciona porque el mockk no permite verificar llamadas a funciones de extensión
+	 */
+//	@Test
+//	fun `cuando se encuentra en el local storage, se llama a markAsLocal`() {
+//		// given: ¿qué condiciones y datos se necesitan para la prueba?
+//		// cada vez que el repository real llame a otherInfoLocalStorage.getArticle(artistName), debe devolver expectedBiography
+//		every { otherInfoLocalStorage.getArticle(artistName) } returns expectedLocalArtist
+//
+//		// when: ¿cuándo tiene que ocurrir lo definido en el given?
+//		otherInfoRepository.getArtistBiography(artistName)
+//
+//		// then: ¿qué tiene que pasar cuando se ejecute lo definido en el when?
+//		// se llamó a la funcion markAsLocal
+//		verify(exactly = 1) { expectedLocalArtist.markAsLocal() }
+//	}
 }
