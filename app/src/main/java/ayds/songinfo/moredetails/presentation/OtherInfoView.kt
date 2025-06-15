@@ -1,5 +1,6 @@
 package ayds.songinfo.moredetails.presentation
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.text.Html
@@ -15,12 +16,12 @@ private const val LASTFM_IMAGE_URL =
 	"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Lastfm_logo.svg/320px-Lastfm_logo.svg.png"
 
 class OtherInfoView : Activity() {
-	var uiState: ArtistBiographyUiState = ArtistBiographyUiState()
+	var uiState: CardUIState = CardUIState()
 
-	private lateinit var articleTextView: TextView
+	private lateinit var cardTextView: TextView
+	private lateinit var sourceTextView: TextView
 	private lateinit var openUrlButton: Button
-	private lateinit var lastFMImageView: ImageView
-
+	private lateinit var logoImageView: ImageView
 	private lateinit var presenter: OtherInfoPresenter
 
 	override fun onCreate(savedInstanceState: android.os.Bundle?) {
@@ -32,18 +33,19 @@ class OtherInfoView : Activity() {
 		initPresenter()
 		initObservers()
 		displayLastFMImage()
-		getArtistInfo()
+		getCardInfo()
 	}
 
 	private fun initProperties() {
-		articleTextView = findViewById(R.id.articleTextView)
+		cardTextView = findViewById(R.id.cardTextView)
 		openUrlButton = findViewById(R.id.openUrlButton)
-		lastFMImageView = findViewById(R.id.lastFMImageView)
+		logoImageView = findViewById(R.id.lastFMImageView)
+		sourceTextView = findViewById(R.id.sourceTextView)
 	}
 
 	private fun initListeners() {
 		openUrlButton.setOnClickListener {
-			navigateToURL(uiState.lastFMUrl)
+			navigateToURL(uiState.url)
 		}
 	}
 
@@ -53,8 +55,8 @@ class OtherInfoView : Activity() {
 	}
 
 	private fun initObservers() {
-		presenter.artistBiographyObservable.subscribe { artistBiography ->
-			updateUIState(artistBiography)
+		presenter.cardObservable.subscribe { card ->
+			updateUIState(card)
 			updateUI()
 		}
 	}
@@ -65,9 +67,8 @@ class OtherInfoView : Activity() {
 		startActivity(intent)
 	}
 
-	private fun getArtistInfo() {
+	private fun getCardInfo() {
 		val artistName = getArtistName()
-		// cuando le pedimos el artista a presenter, éste notifica a sus observadores (esta vista)
 		presenter.getArtistInfo(artistName)
 	}
 
@@ -78,21 +79,28 @@ class OtherInfoView : Activity() {
 	fun updateUI() {
 		runOnUiThread {
 			updateArticleText()
+			updateSourceText()
 		}
 	}
 
-	private fun displayLastFMImage() =
-		Picasso.get().load(LASTFM_IMAGE_URL).into(lastFMImageView as ImageView?)
-
-	private fun updateArticleText() {
-		articleTextView.text = Html.fromHtml(uiState.infoHtml, Html.FROM_HTML_MODE_COMPACT)
+	@SuppressLint("SetTextI18n")
+	private fun updateSourceText() {
+		sourceTextView.text = "Source: " + uiState.source
 	}
 
-	private fun updateUIState(artistBiography: ArtistBiographyUiState) {
+	private fun displayLastFMImage() =
+		Picasso.get().load(LASTFM_IMAGE_URL).into(logoImageView as ImageView?)
+
+	private fun updateArticleText() {
+		cardTextView.text = Html.fromHtml(uiState.infoHtml, Html.FROM_HTML_MODE_COMPACT)
+	}
+
+	private fun updateUIState(card: CardUIState) {
 		uiState = uiState.copy(
-			artistName = artistBiography.artistName,
-			infoHtml = artistBiography.infoHtml,
-			lastFMUrl = artistBiography.lastFMUrl
+			artistName = card.artistName,
+			infoHtml = card.infoHtml,
+			url = card.url,
+			source = card.source
 		)
 	}
 

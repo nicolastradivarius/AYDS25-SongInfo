@@ -2,21 +2,11 @@ package ayds.songinfo.moredetails.presentation
 
 import ayds.observer.Observable
 import ayds.observer.Subject
-import ayds.songinfo.moredetails.domain.ArtistBiography
+import ayds.songinfo.moredetails.domain.Card
 import ayds.songinfo.moredetails.domain.OtherInfoRepository
 
 interface OtherInfoPresenter {
-    val artistBiographyObservable: Observable<ArtistBiographyUiState>
-
-    fun getArtistInfo(artistName: String)
-}
-
-internal class OtherInfoPresenterImpl(
-    private val repository: OtherInfoRepository,
-    private val artistBiographyDescriptionHelper: ArtistBiographyDescriptionHelper
-) : OtherInfoPresenter {
-
-    override val artistBiographyObservable = Subject<ArtistBiographyUiState>()
+    val cardObservable: Observable<CardUIState>
 
     /**
      * Obtiene la biografía del artista y notifica a los observadores.
@@ -24,22 +14,28 @@ internal class OtherInfoPresenterImpl(
      *
      * @param artistName Nombre del artista.
      */
+    fun getArtistInfo(artistName: String)
+}
+
+internal class OtherInfoPresenterImpl(
+    private val repository: OtherInfoRepository,
+    private val cardDescriptionHelper: CardDescriptionHelper
+) : OtherInfoPresenter {
+
+    override val cardObservable = Subject<CardUIState>()
+
     override fun getArtistInfo(artistName: String) {
         Thread {
-            repository.getArtistBiography(artistName).let {
-                artistBiographyObservable.notify(it.toUiState())
+            repository.getCard(artistName).let {
+                cardObservable.notify(it.toUIState())
             }
         }.start()
     }
 
-    /**
-     * Convierte un objeto ArtistBiography a ArtistBiographyUiState.
-     *
-     * @return ArtistBiographyUiState con los datos del artista.
-     */
-    private fun ArtistBiography.toUiState() = ArtistBiographyUiState(
-        artistName,
-        artistBiographyDescriptionHelper.getDescription(this),
-        articleUrl
+    private fun Card.toUIState() = CardUIState(
+        name,
+        cardDescriptionHelper.getFormattedDescription(this),
+        url,
+        source.toString()
     )
 }

@@ -4,11 +4,12 @@ import android.content.Context
 import androidx.room.Room.databaseBuilder
 import ayds.songinfo.moredetails.data.OtherInfoRepositoryImpl
 import ayds.artist.external.lastfm.injector.LastFMInjector
-import ayds.songinfo.moredetails.data.local.ArticleDatabase
+import ayds.songinfo.moredetails.data.local.CardDatabase
 import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorage
 import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorageImpl
 import ayds.songinfo.moredetails.domain.OtherInfoRepository
-import ayds.songinfo.moredetails.presentation.ArtistBiographyDescriptionHelper
+import ayds.songinfo.moredetails.presentation.CardDescriptionHelper
+import ayds.songinfo.moredetails.presentation.CardDescriptionHelperImpl
 import ayds.songinfo.moredetails.presentation.OtherInfoPresenter
 import ayds.songinfo.moredetails.presentation.OtherInfoPresenterImpl
 
@@ -17,23 +18,26 @@ private const val ARTICLE_DB_NAME = "database-article"
 object OtherInfoInjector {
 
     lateinit var presenter: OtherInfoPresenter
-    lateinit var articleDatabase: ArticleDatabase
+    lateinit var cardDatabase: CardDatabase
+    lateinit var cardDescriptionHelper: CardDescriptionHelper
+    lateinit var repository: OtherInfoRepository
+    lateinit var otherInfoLocalStorage: OtherInfoLocalStorage
 
     fun init(context: Context) {
         LastFMInjector.init()
         initDatabase(context)
 
-        val otherInfoLocalStorage: OtherInfoLocalStorage = OtherInfoLocalStorageImpl(articleDatabase)
-        val repository: OtherInfoRepository = OtherInfoRepositoryImpl(
+        otherInfoLocalStorage = OtherInfoLocalStorageImpl(cardDatabase)
+        repository = OtherInfoRepositoryImpl(
             otherInfoLocalStorage,
             LastFMInjector.lastFMService
         )
-        val artistBiographyDescriptionHelper = ArtistBiographyDescriptionHelper()
+        cardDescriptionHelper = CardDescriptionHelperImpl()
 
-        presenter = OtherInfoPresenterImpl(repository, artistBiographyDescriptionHelper)
+        presenter = OtherInfoPresenterImpl(repository, cardDescriptionHelper)
     }
 
     private fun initDatabase(context: Context) {
-        articleDatabase = databaseBuilder(context, ArticleDatabase::class.java, ARTICLE_DB_NAME).build()
+        cardDatabase = databaseBuilder(context, CardDatabase::class.java, ARTICLE_DB_NAME).build()
     }
 }
