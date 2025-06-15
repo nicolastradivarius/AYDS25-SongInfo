@@ -1,13 +1,11 @@
 package ayds.songinfo.moredetails.data
 
-import ayds.songinfo.moredetails.data.external.OtherInfoService
+import ayds.artist.external.lastfm.data.LastFMService
 import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorage
 import ayds.songinfo.moredetails.domain.ArtistBiography
 import ayds.songinfo.moredetails.domain.OtherInfoRepository
-import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -15,7 +13,7 @@ import org.junit.Test
 class OtherInfoRepositoryTest {
 
 	private val otherInfoLocalStorage: OtherInfoLocalStorage = mockk(relaxed = true)
-	private val otherInfoService: OtherInfoService = mockk()
+	private val otherInfoService: LastFMService = mockk()
 	private lateinit var otherInfoRepository: OtherInfoRepository
 	private val artistName = "artistName"
 
@@ -38,7 +36,7 @@ class OtherInfoRepositoryTest {
 		// Configuración inicial antes de cada prueba
 		otherInfoRepository = OtherInfoRepositoryImpl(
 			otherInfoLocalStorage = otherInfoLocalStorage,
-			otherInfoService = otherInfoService
+			lastFMservice = otherInfoService
 		)
 	}
 

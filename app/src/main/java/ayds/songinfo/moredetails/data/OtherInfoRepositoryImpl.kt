@@ -1,23 +1,16 @@
 package ayds.songinfo.moredetails.data
 
-import ayds.songinfo.moredetails.data.external.OtherInfoService
+import ayds.artist.external.lastfm.data.LastFMBiography
+import ayds.artist.external.lastfm.data.LastFMService
 import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorage
 import ayds.songinfo.moredetails.domain.ArtistBiography
 import ayds.songinfo.moredetails.domain.OtherInfoRepository
 
 class OtherInfoRepositoryImpl(
     private val otherInfoLocalStorage: OtherInfoLocalStorage,
-    private val otherInfoService: OtherInfoService
+    private val lastFMservice: LastFMService
 ) : OtherInfoRepository {
 
-    /**
-     * Obtiene la biografía del artista.
-     * Primero intenta obtenerla de la base de datos local.
-     * Si no está disponible, la obtiene del servicio externo y la guarda en la base de datos local si es válida.
-     *
-     * @param artistName Nombre del artista.
-     * @return Biografía del artista.
-     */
     override fun getArtistBiography(artistName: String): ArtistBiography {
         // patrón repository
         var article = otherInfoLocalStorage.getArticle(artistName)
@@ -27,7 +20,7 @@ class OtherInfoRepositoryImpl(
                 article = article.markAsLocal()
             }
             else -> {
-                article = otherInfoService.getArticle(artistName)
+                article = lastFMservice.getArticle(artistName).toArtistBiography()
 
                 // si se encontró el artículo con descripción en el servicio, se guarda en la base de datos
                 if (article.biography.isNotBlank()) {
@@ -37,8 +30,13 @@ class OtherInfoRepositoryImpl(
         }
         return article
     }
+
 }
 
-fun ArtistBiography.markAsLocal(): ArtistBiography {
+private fun LastFMBiography.toArtistBiography() =
+    ArtistBiography(artistName, biography, articleUrl)
+
+
+private fun ArtistBiography.markAsLocal(): ArtistBiography {
     return copy(isLocallyStored = true)
 }
