@@ -2,6 +2,7 @@ package ayds.artist.external.lastfm.injector
 
 import ayds.artist.external.lastfm.data.LastFMAPI
 import ayds.artist.external.lastfm.data.LastFMArtistBiographyHelper
+import ayds.artist.external.lastfm.data.LastFMArtistBiographyHelperImpl
 import ayds.artist.external.lastfm.data.LastFMService
 import ayds.artist.external.lastfm.data.LastFMServiceImpl
 import retrofit2.Retrofit
@@ -19,9 +20,9 @@ object LastFMInjector {
 			.baseUrl(LASTFM_BASE_URL)
 			.addConverterFactory(ScalarsConverterFactory.create())
 			.build()
-		lastFMAPI = retrofit.create<LastFMAPI>(LastFMAPI::class.java)
-		lastFMHelper = LastFMArtistBiographyHelper()
 
+		lastFMAPI = retrofit.create<LastFMAPI>(LastFMAPI::class.java)
+		lastFMHelper = LastFMArtistBiographyHelperImpl()
 		lastFMService = LastFMServiceImpl(lastFMAPI, lastFMHelper)
 	}
 }

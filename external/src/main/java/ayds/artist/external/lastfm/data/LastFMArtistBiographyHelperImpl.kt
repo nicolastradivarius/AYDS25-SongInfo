@@ -9,8 +9,12 @@ private const val CONTENT = "content"
 private const val URL = "url"
 private const val NO_RESULTS = "No Results"
 
-class LastFMArtistBiographyHelper {
-	fun parseArtistBiography(serviceBody: String?, artistName: String): LastFMBiography {
+interface LastFMArtistBiographyHelper {
+	fun parseArtistBiography(serviceBody: String?, artistName: String): LastFMBiography
+}
+
+class LastFMArtistBiographyHelperImpl: LastFMArtistBiographyHelper {
+	override fun parseArtistBiography(serviceBody: String?, artistName: String): LastFMBiography {
 		val gson = Gson()
 		val jobj = gson.fromJson(serviceBody, JsonObject::class.java)
 
