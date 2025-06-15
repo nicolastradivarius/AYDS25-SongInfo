@@ -22,7 +22,6 @@ class OtherInfoRepositoryImpl(
             else -> {
                 article = lastFMservice.getArticle(artistName).toArtistBiography()
 
-                // si se encontró el artículo con descripción en el servicio, se guarda en la base de datos
                 if (article.biography.isNotBlank()) {
                     otherInfoLocalStorage.insertArticle(article)
                 }
