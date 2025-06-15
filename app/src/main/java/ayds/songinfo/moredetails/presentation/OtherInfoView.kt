@@ -31,6 +31,7 @@ class OtherInfoView : Activity() {
 		initListeners()
 		initPresenter()
 		initObservers()
+		displayLastFMImage()
 		getArtistInfo()
 	}
 
@@ -76,12 +77,11 @@ class OtherInfoView : Activity() {
 
 	fun updateUI() {
 		runOnUiThread {
-			updateLastFMImage()
 			updateArticleText()
 		}
 	}
 
-	private fun updateLastFMImage() =
+	private fun displayLastFMImage() =
 		Picasso.get().load(LASTFM_IMAGE_URL).into(lastFMImageView as ImageView?)
 
 	private fun updateArticleText() {
