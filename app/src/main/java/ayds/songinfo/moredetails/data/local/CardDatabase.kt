@@ -20,7 +20,8 @@ data class CardEntity(
     val name: String,
     val content: String,
     val url: String,
-    val source: Int
+    val source: Int,
+    val logoUrl: String
 )
 
 @Dao
@@ -30,6 +31,6 @@ interface CardDao {
     fun insertCard(article: CardEntity)
 
     @Query("SELECT * FROM CardEntity WHERE name LIKE :artistName LIMIT 1")
-    fun getCardByArtistName(artistName: String): CardEntity?
+    fun getCardByArtistName(artistName: String): List<CardEntity>
 
 }

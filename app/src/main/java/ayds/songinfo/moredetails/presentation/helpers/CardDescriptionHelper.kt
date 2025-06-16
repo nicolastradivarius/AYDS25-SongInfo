@@ -1,4 +1,4 @@
-package ayds.songinfo.moredetails.presentation
+package ayds.songinfo.moredetails.presentation.helpers
 
 import ayds.songinfo.moredetails.domain.Card
 import java.util.Locale

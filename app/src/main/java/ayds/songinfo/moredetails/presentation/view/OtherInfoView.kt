@@ -1,30 +1,34 @@
-package ayds.songinfo.moredetails.presentation
+package ayds.songinfo.moredetails.presentation.view
 
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
 import android.text.Html
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.net.toUri
+import androidx.viewpager2.widget.ViewPager2
 import ayds.songinfo.R
 import ayds.songinfo.moredetails.injector.OtherInfoInjector
+import ayds.songinfo.moredetails.presentation.CardUIState
+import ayds.songinfo.moredetails.presentation.CardsUIState
+import ayds.songinfo.moredetails.presentation.adapter.CardsPagerAdapter
+import ayds.songinfo.moredetails.presentation.presenter.OtherInfoPresenter
 import com.squareup.picasso.Picasso
 
-private const val LASTFM_IMAGE_URL =
-	"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Lastfm_logo.svg/320px-Lastfm_logo.svg.png"
-
 class OtherInfoView : Activity() {
-	var uiState: CardUIState = CardUIState()
+	var uiState: CardsUIState = CardsUIState()
 
+	private lateinit var logoImageView: ImageView
 	private lateinit var cardTextView: TextView
 	private lateinit var sourceTextView: TextView
 	private lateinit var openUrlButton: Button
-	private lateinit var logoImageView: ImageView
 	private lateinit var presenter: OtherInfoPresenter
+	private lateinit var cardsViewPager: ViewPager2
 
-	override fun onCreate(savedInstanceState: android.os.Bundle?) {
+	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_other_info)
 
@@ -32,21 +36,15 @@ class OtherInfoView : Activity() {
 		initListeners()
 		initPresenter()
 		initObservers()
-		displayLastFMImage()
 		getCardInfo()
 	}
 
 	private fun initProperties() {
-		cardTextView = findViewById(R.id.cardTextView)
-		openUrlButton = findViewById(R.id.openUrlButton)
-		logoImageView = findViewById(R.id.lastFMImageView)
-		sourceTextView = findViewById(R.id.sourceTextView)
+		cardsViewPager = findViewById(R.id.cardsViewPager)
 	}
 
 	private fun initListeners() {
-		openUrlButton.setOnClickListener {
-			navigateToURL(uiState.url)
-		}
+
 	}
 
 	private fun initPresenter() {
@@ -55,8 +53,8 @@ class OtherInfoView : Activity() {
 	}
 
 	private fun initObservers() {
-		presenter.cardObservable.subscribe { card ->
-			updateUIState(card)
+		presenter.cardsObservable.subscribe { cards ->
+			updateUIState(cards)
 			updateUI()
 		}
 	}
@@ -76,32 +74,30 @@ class OtherInfoView : Activity() {
 		return intent.getStringExtra(ARTIST_NAME_EXTRA) ?: throw Exception("Missing artist name")
 	}
 
-	fun updateUI() {
+	private fun updateUI() {
 		runOnUiThread {
-			updateArticleText()
-			updateSourceText()
-		}
+			cardsViewPager.adapter = CardsPagerAdapter(uiState.cards) {
+
+                navigateToURL(it)
+            }
+        }
+	}
+
+	private fun updateLogoSource(state: CardUIState) {
+		Picasso.get().load(state.logoUrl).into(logoImageView as ImageView?)
 	}
 
 	@SuppressLint("SetTextI18n")
-	private fun updateSourceText() {
-		sourceTextView.text = "Source: " + uiState.source
+	private fun updateSourceText(state: CardUIState) {
+		sourceTextView.text = "Source: " + state.source
 	}
 
-	private fun displayLastFMImage() =
-		Picasso.get().load(LASTFM_IMAGE_URL).into(logoImageView as ImageView?)
-
-	private fun updateArticleText() {
-		cardTextView.text = Html.fromHtml(uiState.infoHtml, Html.FROM_HTML_MODE_COMPACT)
+	private fun updateArticleText(state: CardUIState) {
+		cardTextView.text = Html.fromHtml(state.infoHtml, Html.FROM_HTML_MODE_COMPACT)
 	}
 
-	private fun updateUIState(card: CardUIState) {
-		uiState = uiState.copy(
-			artistName = card.artistName,
-			infoHtml = card.infoHtml,
-			url = card.url,
-			source = card.source
-		)
+	private fun updateUIState(cards: CardsUIState) {
+		uiState = uiState.copy(cards = cards.cards)
 	}
 
 	companion object {

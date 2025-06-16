@@ -5,9 +5,12 @@ data class Card(
     val content: String,
     val url: String,
     val source: CardSource,
+    val logoUrl: String,
     val isLocallyStored: Boolean = false
 )
 
 enum class CardSource {
-    LAST_FM
+    LAST_FM,
+    WIKIPEDIA,
+    NY_TIMES
 }

@@ -9,35 +9,33 @@ import ayds.songinfo.moredetails.domain.OtherInfoRepository
 
 class OtherInfoRepositoryImpl(
     private val otherInfoLocalStorage: OtherInfoLocalStorage,
-    private val service: LastFMService
+    private val otherInfoBroker: OtherInfoBroker
 ) : OtherInfoRepository {
 
-    override fun getCard(artistName: String): Card {
+    override fun getCards(artistName: String): List<Card> {
         // patrón repository
-        var card = otherInfoLocalStorage.getCard(artistName)
+//        var card = otherInfoLocalStorage.getCard(artistName)
+//
+//        when {
+//            (card != null) -> {
+//                card = card.markAsLocal()
+//            }
+//            else -> {
+//                card = otherInfoBroker.getArticle(artistName).toCard()
+//
+//                if (card.content.isNotBlank()) {
+//                    otherInfoLocalStorage.insertCard(card)
+//                }
+//            }
+//        }
 
-        when {
-            (card != null) -> {
-                card = card.markAsLocal()
-            }
-            else -> {
-                card = this.service.getArticle(artistName).toCard()
+        var cards = otherInfoBroker.getCards(artistName)
 
-                if (card.content.isNotBlank()) {
-                    otherInfoLocalStorage.insertCard(card)
-                }
-            }
-        }
-
-        return card
+        return cards
     }
 
 }
 
-private fun LastFMBiography.toCard() =
-    Card(artistName, biography, articleUrl, CardSource.LAST_FM)
-
-
-private fun Card.markAsLocal(): Card {
+fun Card.markAsLocal(): Card {
     return copy(isLocallyStored = true)
 }

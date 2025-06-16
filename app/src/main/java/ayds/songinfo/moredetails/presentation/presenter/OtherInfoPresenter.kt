@@ -1,19 +1,16 @@
-package ayds.songinfo.moredetails.presentation
+package ayds.songinfo.moredetails.presentation.presenter
 
 import ayds.observer.Observable
 import ayds.observer.Subject
 import ayds.songinfo.moredetails.domain.Card
 import ayds.songinfo.moredetails.domain.OtherInfoRepository
+import ayds.songinfo.moredetails.presentation.CardUIState
+import ayds.songinfo.moredetails.presentation.CardsUIState
+import ayds.songinfo.moredetails.presentation.helpers.CardDescriptionHelper
 
 interface OtherInfoPresenter {
-    val cardObservable: Observable<CardUIState>
+    val cardsObservable: Observable<CardsUIState>
 
-    /**
-     * Obtiene la biografía del artista y notifica a los observadores.
-     * Se ejecuta en un hilo separado para evitar bloquear el hilo principal.
-     *
-     * @param artistName Nombre del artista.
-     */
     fun getArtistInfo(artistName: String)
 }
 
@@ -22,13 +19,14 @@ internal class OtherInfoPresenterImpl(
     private val cardDescriptionHelper: CardDescriptionHelper
 ) : OtherInfoPresenter {
 
-    override val cardObservable = Subject<CardUIState>()
+    override val cardsObservable = Subject<CardsUIState>()
 
     override fun getArtistInfo(artistName: String) {
         Thread {
-            repository.getCard(artistName).let {
-                cardObservable.notify(it.toUIState())
-            }
+            val cards = repository.getCards(artistName)
+            val cardsUIState = CardsUIState(cards.map { it.toUIState() })
+            // notifico la lista de cards
+            cardsObservable.notify(cardsUIState)
         }.start()
     }
 
@@ -36,6 +34,7 @@ internal class OtherInfoPresenterImpl(
         name,
         cardDescriptionHelper.getFormattedDescription(this),
         url,
-        source.toString()
+        source.toString(),
+        logoUrl
     )
 }

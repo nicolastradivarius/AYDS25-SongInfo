@@ -4,7 +4,7 @@ import ayds.songinfo.moredetails.domain.Card
 import ayds.songinfo.moredetails.domain.CardSource
 
 interface OtherInfoLocalStorage {
-    fun getCard(artistName: String): Card?
+    fun getCards(artistName: String): List<Card>
     fun insertCard(card: Card)
 }
 
@@ -12,10 +12,16 @@ internal class OtherInfoLocalStorageImpl(
     private val cardDatabase: CardDatabase
 ) : OtherInfoLocalStorage {
 
-    override fun getCard(artistName: String): Card? {
-        val cardEntity = cardDatabase.CardDao().getCardByArtistName(artistName)
-        return cardEntity?.let {
-            Card(artistName, cardEntity.content, cardEntity.url, CardSource.entries[cardEntity.source])
+    override fun getCards(artistName: String): List<Card> {
+        val cardsEntity = cardDatabase.CardDao().getCardByArtistName(artistName)
+        return cardsEntity.map {
+            Card(
+                artistName,
+                it.content,
+                it.url,
+                CardSource.entries[it.source],
+                it.logoUrl
+            )
         }
     }
 
@@ -25,7 +31,8 @@ internal class OtherInfoLocalStorageImpl(
                 card.name,
                 card.content,
                 card.url,
-                card.source.ordinal
+                card.source.ordinal,
+                card.logoUrl
             )
         )
     }
