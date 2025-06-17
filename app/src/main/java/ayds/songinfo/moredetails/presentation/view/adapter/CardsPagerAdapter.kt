@@ -1,5 +1,7 @@
-package ayds.songinfo.moredetails.presentation.adapter
+package ayds.songinfo.moredetails.presentation.view.adapter
 
+import android.text.Html
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,9 +37,10 @@ class CardsPagerAdapter(
         private val openUrlButton: Button = view.findViewById(R.id.openUrlButton)
 
         fun bind(card: CardUIState) {
-            cardTextView.text = card.infoHtml
-            sourceTextView.text = card.source
-            Picasso.get().load(card.logoUrl).into(logoImageView)
+            cardTextView.text = Html.fromHtml(card.description, Html.FROM_HTML_MODE_COMPACT)
+//            cardTextView.movementMethod = ScrollingMovementMethod.getInstance()
+            sourceTextView.text = "Source: " + card.source
+            Picasso.get().load(card.logo).into(logoImageView)
             openUrlButton.setOnClickListener { onOpenUrl(card.url) }
         }
     }

@@ -35,6 +35,6 @@ internal class OtherInfoPresenterImpl(
         cardDescriptionHelper.getFormattedDescription(this),
         url,
         source.toString(),
-        logoUrl
+        logo
     )
 }

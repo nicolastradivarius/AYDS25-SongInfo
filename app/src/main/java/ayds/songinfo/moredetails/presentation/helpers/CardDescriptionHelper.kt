@@ -16,6 +16,8 @@ interface CardDescriptionHelper {
 
 class CardDescriptionHelperImpl: CardDescriptionHelper {
 
+    private val maxWords = 300
+
     override fun getFormattedDescription(card: Card): String {
         val prefix = if (card.isLocallyStored) "[*]\n\n\n" else ""
         val html = textToHtml(card.content, card.name)
@@ -23,10 +25,11 @@ class CardDescriptionHelperImpl: CardDescriptionHelper {
     }
 
     private fun textToHtml(text: String, term: String): String {
+        val limitedText = limitText(text)
         val builder = StringBuilder()
         builder.append("<html><div width=400>")
         builder.append("<font face=\"arial\">")
-        val textWithBold = text
+        val textWithBold = limitedText
             .replace("'", " ")
             .replace("\\n", "\n")
             .replace("\n", "<br>")
@@ -38,5 +41,14 @@ class CardDescriptionHelperImpl: CardDescriptionHelper {
         builder.append("</font></div></html>")
 
         return builder.toString()
+    }
+
+    private fun limitText(text: String): String {
+        val words = text.split("\\s+".toRegex())
+        return if (words.size > maxWords) {
+            words.take(maxWords).joinToString(" ") + "..."
+        } else {
+            text
+        }
     }
 }

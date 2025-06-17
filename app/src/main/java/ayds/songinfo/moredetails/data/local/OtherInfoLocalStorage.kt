@@ -32,7 +32,7 @@ internal class OtherInfoLocalStorageImpl(
                 card.content,
                 card.url,
                 card.source.ordinal,
-                card.logoUrl
+                card.logo
             )
         )
     }

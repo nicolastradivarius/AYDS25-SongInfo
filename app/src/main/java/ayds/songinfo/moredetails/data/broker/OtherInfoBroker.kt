@@ -1,10 +1,9 @@
-package ayds.songinfo.moredetails.data
+package ayds.songinfo.moredetails.data.broker
 
 import ayds.artist.external.lastfm.data.LastFMBiography
 import ayds.artist.external.lastfm.data.LastFMService
 import ayds.artist.external.newyorktimes.data.NYT_LOGO_URL
 import ayds.artist.external.newyorktimes.data.NYTimesArticle
-import ayds.artist.external.newyorktimes.data.NYTimesArticle.EmptyArtistDataExternal
 import ayds.artist.external.newyorktimes.data.NYTimesService
 import ayds.artist.external.wikipedia.data.WikipediaArticle
 import ayds.artist.external.wikipedia.data.WikipediaTrackService
@@ -60,7 +59,7 @@ internal class OtherInfoBrokerImpl(
             content = lastFMBiography.biography,
             url = lastFMBiography.articleUrl,
             source = CardSource.LAST_FM,
-            logoUrl = lastFMBiography.logoUrl,
+            logo = lastFMBiography.logoUrl,
         )
     }
 
@@ -71,7 +70,7 @@ internal class OtherInfoBrokerImpl(
                 content = "",
                 url = "",
                 source = CardSource.WIKIPEDIA,
-                logoUrl = ""
+                logo = ""
             )
         }
         return Card(
@@ -79,7 +78,7 @@ internal class OtherInfoBrokerImpl(
             content = wikipediaArticle?.description ?: "",
             url = wikipediaArticle?.wikipediaURL ?: "",
             source = CardSource.WIKIPEDIA,
-            logoUrl = wikipediaArticle.wikipediaLogoURL
+            logo = wikipediaArticle.wikipediaLogoURL
         )
     }
 
@@ -89,7 +88,7 @@ internal class OtherInfoBrokerImpl(
             content = "",
             url = "",
             source = CardSource.NY_TIMES,
-            logoUrl = ""
+            logo = ""
         )
         if (nyTimesArticle is NYTimesArticle.NYTimesArticleWithData) {
             card = Card(
@@ -97,7 +96,7 @@ internal class OtherInfoBrokerImpl(
                 content = nyTimesArticle.info ?: "",
                 url = nyTimesArticle.url ?: "",
                 source = CardSource.NY_TIMES,
-                logoUrl = NYT_LOGO_URL
+                logo = NYT_LOGO_URL
             )
         }
 

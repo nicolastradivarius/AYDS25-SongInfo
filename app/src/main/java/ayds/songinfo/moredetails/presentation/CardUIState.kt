@@ -5,9 +5,9 @@ data class CardsUIState(
 )
 
 data class CardUIState(
-    var artistName: String = "",
-    var infoHtml: String = "",
+    var artist: String = "",
+    var description: String = "",
     var url: String = "",
     var source: String = "",
-    var logoUrl: String = ""
+    var logo: String = ""
 )

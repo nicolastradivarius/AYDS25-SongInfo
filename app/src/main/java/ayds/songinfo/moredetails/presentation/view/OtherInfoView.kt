@@ -1,30 +1,19 @@
 package ayds.songinfo.moredetails.presentation.view
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.text.Html
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.viewpager2.widget.ViewPager2
 import ayds.songinfo.R
 import ayds.songinfo.moredetails.injector.OtherInfoInjector
-import ayds.songinfo.moredetails.presentation.CardUIState
 import ayds.songinfo.moredetails.presentation.CardsUIState
-import ayds.songinfo.moredetails.presentation.adapter.CardsPagerAdapter
+import ayds.songinfo.moredetails.presentation.view.adapter.CardsPagerAdapter
 import ayds.songinfo.moredetails.presentation.presenter.OtherInfoPresenter
-import com.squareup.picasso.Picasso
 
 class OtherInfoView : Activity() {
 	var uiState: CardsUIState = CardsUIState()
 
-	private lateinit var logoImageView: ImageView
-	private lateinit var cardTextView: TextView
-	private lateinit var sourceTextView: TextView
-	private lateinit var openUrlButton: Button
 	private lateinit var presenter: OtherInfoPresenter
 	private lateinit var cardsViewPager: ViewPager2
 
@@ -33,7 +22,6 @@ class OtherInfoView : Activity() {
 		setContentView(R.layout.activity_other_info)
 
 		initProperties()
-		initListeners()
 		initPresenter()
 		initObservers()
 		getCardInfo()
@@ -41,10 +29,6 @@ class OtherInfoView : Activity() {
 
 	private fun initProperties() {
 		cardsViewPager = findViewById(R.id.cardsViewPager)
-	}
-
-	private fun initListeners() {
-
 	}
 
 	private fun initPresenter() {
@@ -77,23 +61,9 @@ class OtherInfoView : Activity() {
 	private fun updateUI() {
 		runOnUiThread {
 			cardsViewPager.adapter = CardsPagerAdapter(uiState.cards) {
-
                 navigateToURL(it)
             }
         }
-	}
-
-	private fun updateLogoSource(state: CardUIState) {
-		Picasso.get().load(state.logoUrl).into(logoImageView as ImageView?)
-	}
-
-	@SuppressLint("SetTextI18n")
-	private fun updateSourceText(state: CardUIState) {
-		sourceTextView.text = "Source: " + state.source
-	}
-
-	private fun updateArticleText(state: CardUIState) {
-		cardTextView.text = Html.fromHtml(state.infoHtml, Html.FROM_HTML_MODE_COMPACT)
 	}
 
 	private fun updateUIState(cards: CardsUIState) {

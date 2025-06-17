@@ -5,7 +5,7 @@ data class Card(
     val content: String,
     val url: String,
     val source: CardSource,
-    val logoUrl: String,
+    val logo: String,
     val isLocallyStored: Boolean = false
 )
 

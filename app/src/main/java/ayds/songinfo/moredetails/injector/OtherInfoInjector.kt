@@ -6,8 +6,8 @@ import ayds.songinfo.moredetails.data.OtherInfoRepositoryImpl
 import ayds.artist.external.lastfm.injector.LastFMInjector
 import ayds.artist.external.newyorktimes.injector.NYTimesInjector
 import ayds.artist.external.wikipedia.injector.WikipediaInjector
-import ayds.songinfo.moredetails.data.OtherInfoBroker
-import ayds.songinfo.moredetails.data.OtherInfoBrokerImpl
+import ayds.songinfo.moredetails.data.broker.OtherInfoBroker
+import ayds.songinfo.moredetails.data.broker.OtherInfoBrokerImpl
 import ayds.songinfo.moredetails.data.local.CardDatabase
 import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorage
 import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorageImpl
