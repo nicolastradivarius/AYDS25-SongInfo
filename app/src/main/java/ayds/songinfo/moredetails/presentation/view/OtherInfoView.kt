@@ -33,7 +33,7 @@ class OtherInfoView : Activity() {
 
 	private fun initPresenter() {
 		OtherInfoInjector.init(this)
-		presenter = OtherInfoInjector.presenter
+		presenter = OtherInfoInjector.getPresenter()
 	}
 
 	private fun initObservers() {
