@@ -1,57 +1,91 @@
 package ayds.songinfo.moredetails.presentation
 
-import ayds.songinfo.moredetails.domain.ArtistBiography
+import ayds.songinfo.moredetails.domain.Card
+import ayds.songinfo.moredetails.domain.CardSource
 import ayds.songinfo.moredetails.domain.OtherInfoRepository
+import ayds.songinfo.moredetails.presentation.helpers.CardDescriptionHelper
+import ayds.songinfo.moredetails.presentation.presenter.OtherInfoPresenterImpl
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
 
 class OtherInfoPresenterTest {
+    private val artistName = "artistName"
+    private val otherInfoRepository: OtherInfoRepository = mockk(relaxed = true)
+    private val cardDescriptionHelper: CardDescriptionHelper = mockk(relaxed = true)
+    private val otherInfoPresenter = OtherInfoPresenterImpl(
+        otherInfoRepository,
+        cardDescriptionHelper
+    )
 
-	private var otherInfoRepository: OtherInfoRepository = mockk(relaxed = true)
-	private val artistBiographyDescriptionHelper: ArtistBiographyDescriptionHelper = mockk(relaxed = true)
-	private val otherInfoPresenter = OtherInfoPresenterImpl(
-		repository = otherInfoRepository,
-		artistBiographyDescriptionHelper = artistBiographyDescriptionHelper
-	)
+    @Test
+    fun `getCards llama al repositorio y notifica a los observers`() {
+        // given
+        val card = Card(
+            name = artistName,
+            content = "description",
+            url = "example.com",
+            source = CardSource.LAST_FM,
+            logo = "logo.com"
+        )
+        var expectedCards = CardsUIState(
+            listOf(
+                CardUIState(
+                    artist = card.name,
+                    description = "formatted description",
+                    url = card.url,
+                    source = card.source.toString(),
+                    logo = card.logo
+                )
+            )
+        )
+        every { otherInfoRepository.getCards(artistName) } returns listOf(card)
+        every { cardDescriptionHelper.getFormattedDescription(card) } returns "formatted description"
+        // armo una funcion para suscribirme al observer del presenter
+        val onCardsUpdate: (cardsUIState: CardsUIState) -> Unit = mockk(relaxed = true)
+        otherInfoPresenter.cardsObservable.subscribe(onCardsUpdate)
 
-	@Test
-	fun `getArtistInfo llama al repositorio y notifica a los observadores del presenter`() {
-		// given: defino que el repositorio devuelve un mock, y una función para suscribirme al observable
-		val artistBiography = ArtistBiography("artistName", "sarasa", "articleUrl")
-		val artistObserverCallback: (ArtistBiographyUiState) -> Unit = mockk(relaxed = true)
-		val artistName = "artistName"
-		every { otherInfoRepository.getArtistBiography(artistName) } returns artistBiography
+        // when
+        otherInfoPresenter.getCards(artistName)
 
-		// si no agrego esto, cuando se llama a getDescription, al no estar especificado qué hacer con
-		// artistBiographyDescriptionHelper.getDescription(this) en la función toUiState(), como el
-		// helper es un mockk con relaxed=true, retorna el valor por defecto de un String, que es "".
-		// esto provocaba que no haya match entre el artista convertido a UIState (que tiene ""),
-		// y el expectedResult (que tiene "description").
-		every { artistBiographyDescriptionHelper.getDescription(artistBiography) } returns "description"
+        // then
+        verify { onCardsUpdate(expectedCards) }
+    }
 
-		otherInfoPresenter.artistBiographyObservable.subscribe { uiState -> artistObserverCallback(uiState) }
+    @Test
+    fun `getCards obtiene una lista vacia del repositorio y notifica a los observers`() {
+        // given
+        val expectedCards = CardsUIState(emptyList())
+        every { otherInfoRepository.getCards(artistName) } returns emptyList()
+        every { cardDescriptionHelper.getFormattedDescription(any()) } returns "formatted description"
+        // armo una funcion para suscribirme al observer del presenter
+        val onCardsUpdate: (cardsUIState: CardsUIState) -> Unit = mockk(relaxed = true)
+        otherInfoPresenter.cardsObservable.subscribe(onCardsUpdate)
 
-		// when
-		otherInfoPresenter.getArtistInfo(artistName)
+        // when
+        otherInfoPresenter.getCards(artistName)
 
-		// then
-		val expectedResult = ArtistBiographyUiState(artistName, "description", "articleUrl")
-		verify(exactly = 1) { artistObserverCallback(expectedResult) }
-	}
+        // then
+        verify { onCardsUpdate(expectedCards) }
+    }
 
-	@Test
-	fun `getArtistInfo invoca a funcion del helper cuando llega el artista`() {
-		// given
-		val artistBiography = ArtistBiography("artistName", "description", "articleUrl")
-		val artistName = "artistName"
-		every { otherInfoRepository.getArtistBiography(artistName) } returns artistBiography
+    @Test
+    fun `getCards llama a la funcion del helper`() {
+        // given
+        val card = Card(
+            name = artistName,
+            content = "description",
+            url = "example.com",
+            source = CardSource.LAST_FM,
+            logo = "logo.com"
+        )
+        every { otherInfoRepository.getCards(artistName) } returns listOf(card)
 
-		// when
-		otherInfoPresenter.getArtistInfo(artistName)
+        // when
+        otherInfoPresenter.getCards(artistName)
 
-		// then
-		verify(exactly = 1) { artistBiographyDescriptionHelper.getDescription(artistBiography) }
-	}
+        // then
+        verify (exactly = 1) { cardDescriptionHelper.getFormattedDescription(card) }
+    }
 }

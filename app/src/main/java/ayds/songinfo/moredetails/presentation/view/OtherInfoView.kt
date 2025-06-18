@@ -51,7 +51,7 @@ class OtherInfoView : Activity() {
 
 	private fun getCardInfo() {
 		val artistName = getArtistName()
-		presenter.getArtistInfo(artistName)
+		presenter.getCards(artistName)
 	}
 
 	private fun getArtistName(): String {

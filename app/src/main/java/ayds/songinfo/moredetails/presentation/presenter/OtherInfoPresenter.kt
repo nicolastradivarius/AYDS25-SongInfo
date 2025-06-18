@@ -11,7 +11,7 @@ import ayds.songinfo.moredetails.presentation.helpers.CardDescriptionHelper
 interface OtherInfoPresenter {
     val cardsObservable: Observable<CardsUIState>
 
-    fun getArtistInfo(artistName: String)
+    fun getCards(artistName: String)
 }
 
 internal class OtherInfoPresenterImpl(
@@ -21,7 +21,7 @@ internal class OtherInfoPresenterImpl(
 
     override val cardsObservable = Subject<CardsUIState>()
 
-    override fun getArtistInfo(artistName: String) {
+    override fun getCards(artistName: String) {
         Thread {
             val cards = repository.getCards(artistName)
             val cardsUIState = CardsUIState(cards.map { it.toUIState() })

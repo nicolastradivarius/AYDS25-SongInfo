@@ -1,94 +1,83 @@
 package ayds.songinfo.moredetails.data
 
-import ayds.artist.external.lastfm.data.LastFMService
+import ayds.songinfo.moredetails.data.broker.OtherInfoBroker
 import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorage
-import ayds.songinfo.moredetails.domain.ArtistBiography
+import ayds.songinfo.moredetails.domain.Card
+import ayds.songinfo.moredetails.domain.CardSource
 import ayds.songinfo.moredetails.domain.OtherInfoRepository
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Test
 
 class OtherInfoRepositoryTest {
 
-	private val otherInfoLocalStorage: OtherInfoLocalStorage = mockk(relaxed = true)
-	private val otherInfoService: LastFMService = mockk()
-	private lateinit var otherInfoRepository: OtherInfoRepository
 	private val artistName = "artistName"
+	private val otherInfoLocalStorage: OtherInfoLocalStorage = mockk(relaxed = true)
+	private val otherInfoBroker: OtherInfoBroker = mockk(relaxed = true)
+	private val otherInfoRepository: OtherInfoRepository = OtherInfoRepositoryImpl(
+		otherInfoLocalStorage,
+		otherInfoBroker
+	)
 
-	private val expectedLocalArtist = ArtistBiography(
-		artistName = artistName,
-		biography = "biography",
-		articleUrl = "lastFMUrl",
+	private val expectedLocalArtist = Card(
+		name = artistName,
+		content = "biography",
+		url = "lastFMUrl",
+		source = CardSource.LAST_FM,
+		logo = "lastFMLogo",
 		isLocallyStored = true
 	)
 
-	private val expectedServiceArtist = ArtistBiography(
-		artistName = artistName,
-		biography = "biography",
-		articleUrl = "lastFMUrl",
+	private val expectedLastFMArtist = Card(
+		name = artistName,
+		content = "biography",
+		url = "lastFMUrl",
+		source = CardSource.LAST_FM,
+		logo = "lastFMLogo",
 		isLocallyStored = false
 	)
 
-	@Before
-	fun onBefore() {
-		// Configuración inicial antes de cada prueba
-		otherInfoRepository = OtherInfoRepositoryImpl(
-			otherInfoLocalStorage = otherInfoLocalStorage,
-			lastFMservice = otherInfoService
-		)
+	@Test
+	fun `getCards no encuentra la card en el local storage y llama al broker`() {
+		// given: ¿qué condiciones y datos se necesitan para la prueba?
+		every { otherInfoLocalStorage.getCards(artistName) } returns emptyList()
+		every { otherInfoBroker.getCards(artistName) } returns listOf(expectedLastFMArtist)
+
+		// when: ¿cuándo tiene que ocurrir lo definido en el given?
+		val cards = otherInfoRepository.getCards(artistName)
+		val lastFMArtist = cards.first { it.source == CardSource.LAST_FM }
+
+		// then: ¿qué tiene que pasar cuando se ejecute lo definido en el when?
+		assertEquals(lastFMArtist, expectedLastFMArtist)
+		assertFalse(lastFMArtist.isLocallyStored)
 	}
 
 	@Test
-	fun `getArtistBiography no encuentra la biografia en el local storage y llama al servicio`() {
-		// given: ¿qué condiciones y datos se necesitan para la prueba?
-		// cada vez que el repository real llame a otherInfoLocalStorage.getArticle(artistName), debe devolver null
-		every { otherInfoLocalStorage.getArticle(artistName) } returns null
-		// cada vez que el repository real llame a otherInfoService.getArticle(artistName), debe devolver expectedBiography
-		every { otherInfoService.getArticle(artistName) } returns expectedServiceArtist
-		// y cada vez que el repository real llame a otherInfoLocalStorage.insertArticle(expectedBiography), no hace nada (es un mock)
-		// (con relaxed = true en la declaración de otherInfoLocalStorage, no es necesario especificar esto, ya que el mock relajado no lanza excepciones)
-		//every { otherInfoLocalStorage.insertArticle(expectedBiography) } returns Unit
+	fun `getCards encuentra la card en el local storage y no llama al broker`() {
+		// given
+		every { otherInfoLocalStorage.getCards(artistName) } returns listOf(expectedLocalArtist)
+		every { otherInfoBroker.getCards(artistName) } returns emptyList()
 
-		// when: ¿cuándo tiene que ocurrir lo definido en el given?
-		val result = otherInfoRepository.getArtistBiography(artistName)
+		// when
+		val cards = otherInfoRepository.getCards(artistName)
+		val localArtist = cards.first { it.source == CardSource.LAST_FM }
 
-		// then: ¿qué tiene que pasar cuando se ejecute lo definido en el when?
-		assertEquals(expectedServiceArtist, result)
-		assertFalse(result.isLocallyStored)
+		// then
+		assertEquals(localArtist, expectedLocalArtist)
+		assertTrue(localArtist.isLocallyStored)
 	}
 
 	@Test
-	fun `getArtistBiography encuentra la biografia en el local storage`() {
-		// given: ¿qué condiciones y datos se necesitan para la prueba?
-		// cada vez que el repository real llame a otherInfoLocalStorage.getArticle(artistName), debe devolver expectedBiography
-		every { otherInfoLocalStorage.getArticle(artistName) } returns expectedLocalArtist
+	fun `getCards no encuentra la card en el local storage y el broker devuelve una lista vacia`() {
+		// given
+		every { otherInfoLocalStorage.getCards(artistName) } returns emptyList()
+		every { otherInfoBroker.getCards(artistName) } returns emptyList()
 
-		// when: ¿cuándo tiene que ocurrir lo definido en el given?
-		val result = otherInfoRepository.getArtistBiography(artistName)
+		// when
+		val cards = otherInfoRepository.getCards(artistName)
 
-		// then: ¿qué tiene que pasar cuando se ejecute lo definido en el when?
-		// el resultado debe ser igual a expectedBiography
-		assertEquals(expectedLocalArtist, result)
-		// debe estar marcado como local
-		assertTrue(result.isLocallyStored)
+		// then
+		assertTrue(cards.isEmpty())
 	}
-
-	/*
-	No funciona porque el mockk no permite verificar llamadas a funciones de extensión
-	 */
-//	@Test
-//	fun `cuando se encuentra en el local storage, se llama a markAsLocal`() {
-//		// given: ¿qué condiciones y datos se necesitan para la prueba?
-//		// cada vez que el repository real llame a otherInfoLocalStorage.getArticle(artistName), debe devolver expectedBiography
-//		every { otherInfoLocalStorage.getArticle(artistName) } returns expectedLocalArtist
-//
-//		// when: ¿cuándo tiene que ocurrir lo definido en el given?
-//		otherInfoRepository.getArtistBiography(artistName)
-//
-//		// then: ¿qué tiene que pasar cuando se ejecute lo definido en el when?
-//		// se llamó a la funcion markAsLocal
-//		verify(exactly = 1) { expectedLocalArtist.markAsLocal() }
-//	}
 }
